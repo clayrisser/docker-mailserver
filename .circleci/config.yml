@@ -7,7 +7,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "7d:94:8b:82:92:92:a6:dd:b4:39:4a:bc:e8:b6:4c:0f"
+            - "f7:a0:0b:39:77:7b:11:7a:02:c4:61:85:a2:0f:82:ca"
       - run:
           name: helm-github-pages
           environment:
