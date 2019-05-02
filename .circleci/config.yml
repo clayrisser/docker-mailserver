@@ -32,6 +32,9 @@ jobs:
             tar xzvf kubeval-linux-amd64.tar.gz
             chmod u+x kubeval
             mv kubeval /usr/local/bin/            
+      - run:
+          name: Lint helm syntax
+          command: helm-lint helm-chart/docker-mailserver                       
             
   deploy:
     docker:
