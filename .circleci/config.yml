@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  setup_test_environment:
     docker:
      - image: alpine
     environment:
@@ -13,7 +13,7 @@ jobs:
           command: | 
             apk update
             apk add ca-certificates git openssh bash curl
-            
+
       - run:
           name: Install helm
           command: | 
@@ -35,18 +35,32 @@ jobs:
             chmod u+x kubeval
             mv kubeval /usr/local/bin/   
 
-      - run:
-          name: Lint helm syntax
+  lint_helm_syntax:
+    steps:
+        - run:
           command: helm lint helm-chart/docker-mailserver  
 
+  lint_kubernetes_manifests:
+    steps:
       - run:
           name: Lint generated kubernetes manifests
           command: |
             mkdir manifests
             helm template helm-chart/docker-mailserver --output-dir manifests
-            find manifests/ -name '*.yaml' | grep -v crd | xargs kubeval -v $KUBERNETES_VERSION                                             
+            find manifests/ -name '*.yaml' | grep -v crd | xargs kubeval -v $KUBERNETES_VERSION     
+
+  execute_helm_unit_tests:
+    steps:
+      - run:
+          name: Execute helm unit tests
+          command: |
+            mkdir -p helm-chart/docker-mailserver/config/opendkim/keys/example.com
+            cp helm-chart/docker-mailserver/demo-mode-dkim-key-for-example.com.key helm-chart/docker-mailserver/config/opendkim/keys/example.com/mail.private
+            echo "sample data for unit test" > helm-chart/docker-mailserver/config/opendkim/ignore.txt
+            travis_retry helm plugin install https://github.com/lrills/helm-unittest
+            helm unittest helm-chart/docker-mailserver                                                     
             
-  deploy:
+  deploy_to_repo:
     docker:
       - image: alpine
     steps:
@@ -60,9 +74,20 @@ jobs:
 
 workflows:
   version: 2
-  build_and_test:
+  test_and_deploy:
     jobs:
-      - test
-      - deploy:
+      - setup_test_environment
+      - lint_helm_syntax:
           requires:
-            - test      
+            - setup_test_environment      
+      - lint_kubernetes_manifests:
+          requires:
+            - setup_test_environment      
+      - execute_helm_unit_tests:
+          requires:
+            - setup_test_environment                              
+      - deploy_to_repo:
+          requires:
+            - lint_helm_syntax
+            - lint_kubernetes_manifests
+            - execute_helm_unit_tests
