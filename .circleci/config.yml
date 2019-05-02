@@ -3,6 +3,9 @@ jobs:
   test:
     docker:
      - image: alpine
+    environment:
+      HELM_VERSION: 2.13.1
+      KUBEVAL_VERSION: 0.7.3
     steps:
       - checkout
       - run:
@@ -25,7 +28,7 @@ jobs:
       - run:
           name: Install kubeval
           command: | 
-            wget https://github.com/garethr/kubeval/releases/download/0.7.3/kubeval-linux-amd64.tar.gz 
+            wget https://github.com/garethr/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz 
             tar xzvf kubeval-linux-amd64.tar.gz
             chmod u+x kubeval
             mv kubeval /usr/local/bin/            
