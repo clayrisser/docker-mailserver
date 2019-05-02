@@ -36,11 +36,15 @@ jobs:
             mv kubeval /usr/local/bin/   
 
   lint_helm_syntax:
+    docker:
+     - image: alpine
     steps:
         - run:
           command: helm lint helm-chart/docker-mailserver  
 
   lint_kubernetes_manifests:
+    docker:
+     - image: alpine
     steps:
       - run:
           name: Lint generated kubernetes manifests
@@ -50,6 +54,8 @@ jobs:
             find manifests/ -name '*.yaml' | grep -v crd | xargs kubeval -v $KUBERNETES_VERSION     
 
   execute_helm_unit_tests:
+    docker:
+     - image: alpine
     steps:
       - run:
           name: Execute helm unit tests
@@ -90,4 +96,4 @@ workflows:
           requires:
             - lint_helm_syntax
             - lint_kubernetes_manifests
-            - execute_helm_unit_tests
+            - execute_helm_unit_tests 
