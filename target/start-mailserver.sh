@@ -803,15 +803,9 @@ function _setup_ldap
     postconf -e "virtual_alias_maps = ldap:/etc/postfix/ldap-aliases.cf, ldap:/etc/postfix/ldap-groups.cf" || \
     _notify 'inf' "==> Warning: /etc/postfix/ldap-aliases.cf or /etc/postfix/ldap-groups.cf not found"
   fi
-
-  # Remove $myhostname from mydestination https://github.com/docker-mailserver/docker-mailserver/issues/7
-  if [[ ${EXPERIMENTAL_REMOVE_VIRTUAL_DOMAIN_FROM_MYDESTINATION} -eq 1 ]]
-  then
+  
   # shellcheck disable=SC2016
   sed -i 's|mydestination = $myhostname, |mydestination = |' /etc/postfix/main.cf
-  fi
-
-  return 0
 }
 
 function _setup_postgrey
